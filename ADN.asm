@@ -10,8 +10,8 @@
 ;*					Esteban Arias Mendez					 *
 ;****************************************************************************
 
-section .data
-	msj_Bienvenida: db "Generador de Secuencias de ADN",10,0
+section .data																		;Declaro las variables con valores fijos
+	msj_Bienvenida: db "                            Generador de Secuencias de ADN",10,0
 	len_msjBienvenida: equ $-msj_Bienvenida
 	
 	msj_Ingrese: db "Ingrese la cantidad de secuencias a realizar: ",10,0
@@ -25,18 +25,29 @@ section .data
 	cambiar_Linea: db " ",10,0
 	
 	ext_Archivo: db ".adn",10,0
-section .bss
+	
+	archivo1: db"./ADN1.adn",0
+	len_arc1: equ $-archivo1
+	
+	archivo2: db"./ADN2.adn",0
+	len_arc2: equ $-archivo2
+	
+	archivo_Cargado: db "Archivo leido satisfactoriamente.",10
+section .bss														;Declaro las variables que aun no son utilizadas, sino conformen va avanzando la aplicacion
 	cant_Sec: resb 1000
 	nom_Archivo: resb 100
 	cad_Generada: resb 1000000
+	file1: resb 1000000
+	file2: resb 1000000
 	
-section .text
+
+section .text														;Aqui es donde se empieza a ejecutar el codigo, llamo a las libreria de C, que luego seran utlizadas en otras funciones
 	extern printf
 	extern srand
 	extern time
 	extern rand
 	extern scanf
-	global main
+	global main													;sustituyo la etica start por global para poder utilizar las librerias de C.
 	
 main:
 	call imprimir_Bienvenida
@@ -44,11 +55,10 @@ main:
 	call obtener_Cantidad
 	call imprimir_Nombre
 	call obtener_Nombre
-	xor edx,edx
-	xor ecx,ecx
-	mov ecx,10
 	call generar_cadena
 	call generar_Archivo
+	call cargar_Archivo1
+	call cargar_Archivo2
 	call salir
 	
 	
@@ -99,7 +109,6 @@ generar_cadena:								;Funcion que genera la cadena de ADN
 	add esp,4
 	
 	.loop:									;tengo un ciclo que realiza una serie de funciones, como generar el aleatorio de la cadena de ADN
-		
 		cmp esi,[cant_Sec]
 		je .imprimir
 		
@@ -199,6 +208,59 @@ generar_Archivo: 									;funcion que genera los archivos donde vamos a guardar
 		int 80h
 	ret
 
+
+cargar_Archivo1:								;Funcion que carga el archivo
+	
+	mov ebx, [archivo1] 
+	mov eax, 5  
+	mov ecx, 0  
+	int 80h     
+
+	mov eax, 3  
+	mov ebx, eax
+	mov ecx, file1 
+	mov edx, len_arc1
+	int 80h     
+
+	mov eax, 4  
+	mov ebx, 1
+	mov ecx, file1 
+	mov edx, len_arc1
+	int 80h     
+
+	mov eax, 6
+	push archivo_Cargado
+	call printf
+	add esp,4
+
+	int 80h     
+	
+	ret
+
+cargar_Archivo2:								;Funcion que carga el archivo
+	
+	mov ebx, [archivo2] 
+	mov eax, 5  
+	mov ecx, 0  
+	int 80h     
+
+	mov eax, 3  
+	mov ebx, eax
+	mov ecx, file2 
+	mov edx, len_arc2
+	int 80h     
+
+	mov eax, 4  
+	mov ebx, 1
+	mov ecx, file2
+	mov edx, len_arc2
+	int 80h     
+
+	mov eax, 6
+	int 80h     
+	
+	ret
+	
 salir:
 	mov eax,1
 	mov ebx,0
